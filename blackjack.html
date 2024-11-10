@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Blackjack</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #2c8c2c;
+            color: white;
+        }
+        .game-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+        .hand {
+            display: flex;
+            margin: 10px 0;
+        }
+        .card {
+            width: 50px;
+            height: 75px;
+            background-color: white;
+            color: black;
+            margin: 0 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+            border-radius: 5px;
+        }
+        button {
+            margin: 5px;
+            padding: 10px 20px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        .home-link {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            padding: 5px 10px;
+            background-color: #333;
+            color: white;
+            text-decoration: none;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="home-link">Home</a>
+    <h1>Simple Blackjack</h1>
+    <div class="game-area">
+        <h2>Dealer's Hand: <span id="dealer-score"></span></h2>
+        <div id="dealer-hand" class="hand"></div>
+        <h2>Your Hand: <span id="player-score"></span></h2>
+        <div id="player-hand" class="hand"></div>
+        <div>
+            <button id="hit-button">Hit</button>
+            <button id="stand-button">Stand</button>
+        </div>
+        <div id="message"></div>
+    </div>
+    <script>
+        const suits = ['♠', '♥', '♦', '♣'];
+        const values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+        let deck = [];
+        let playerHand = [];
+        let dealerHand = [];
+
+        const dealerHandElement = document.getElementById('dealer-hand');
+        const playerHandElement = document.getElementById('player-hand');
+        const hitButton = document.getElementById('hit-button');
+        const standButton = document.getElementById('stand-button');
+        const messageElement = document.getElementById('message');
+        const dealerScoreElement = document.getElementById('dealer-score');
+        const playerScoreElement = document.getElementById('player-score');
+
+        function createDeck() {
+            deck = [];
+            for (let suit of suits) {
+                for (let value of values) {
+                    deck.push({ suit, value });
+                }
+            }
+        }
+
+        function shuffleDeck() {
+            for (let i = deck.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [deck[i], deck[j]] = [deck[j], deck[i]];
+            }
+        }
+
+        function dealCard() {
+            return deck.pop();
+        }
+
+        function getCardValue(card) {
+            if (['J', 'Q', 'K'].includes(card.value)) return 10;
+            if (card.value === 'A') return 11;
+            return parseInt(card.value);
+        }
+
+        function calculateHandValue(hand) {
+            let value = 0;
+            let aces = 0;
+            for (let card of hand) {
+                if (card.value === 'A') aces++;
+                value += getCardValue(card);
+            }
+            while (value > 21 && aces > 0) {
+                value -= 10;
+                aces--;
+            }
+            return value;
+        }
+
+        function updateHandDisplay(hand, element) {
+            element.innerHTML = '';
+            for (let card of hand) {
+                const cardElement = document.createElement('div');
+                cardElement.className = 'card';
+                cardElement.textContent = `${card.value}${card.suit}`;
+                element.appendChild(cardElement);
+            }
+        }
+
+        function updateScores() {
+            dealerScoreElement.textContent = calculateHandValue(dealerHand);
+            playerScoreElement.textContent = calculateHandValue(playerHand);
+        }
+
+        function startGame() {
+            createDeck();
+            shuffleDeck();
+            playerHand = [dealCard(), dealCard()];
+            dealerHand = [dealCard(), dealCard()];
+            updateHandDisplay(playerHand, playerHandElement);
+            updateHandDisplay([dealerHand[0], { suit: '?', value: '?' }], dealerHandElement);
+            updateScores();
+            hitButton.disabled = false;
+            standButton.disabled = false;
+            messageElement.textContent = '';
+        }
+
+        function hit() {
+            playerHand.push(dealCard());
+            updateHandDisplay(playerHand, playerHandElement);
+            updateScores();
+            if (calculateHandValue(playerHand) > 21) {
+                endGame('You busted! Dealer wins.');
+            }
+        }
+
+        function stand() {
+            while (calculateHandValue(dealerHand) < 17) {
+                dealerHand.push(dealCard());
+            }
+            updateHandDisplay(dealerHand, dealerHandElement);
+            updateScores();
+            endGame(determineWinner());
+        }
+
+        function determineWinner() {
+            const playerValue = calculateHandValue(playerHand);
+            const dealerValue = calculateHandValue(dealerHand);
+            if (dealerValue > 21) return 'Dealer busted! You win!';
+            if (playerValue > dealerValue) return 'You win!';
+            if (playerValue < dealerValue) return 'Dealer wins!';
+            return 'It\'s a tie!';
+        }
+
+        function endGame(message) {
+            messageElement.textContent = message;
+            hitButton.disabled = true;
+            standButton.disabled = true;
+            setTimeout(startGame, 3000);
+        }
+
+        hitButton.addEventListener('click', hit);
+        standButton.addEventListener('click', stand);
+
+        startGame();
+    </script>
+</body>
+</html>

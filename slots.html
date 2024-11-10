@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Slot Machine</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .slot-machine {
+            text-align: center;
+        }
+        .reels {
+            display: flex;
+            justify-content: center;
+            font-size: 5rem;
+            margin: 20px 0;
+        }
+        .reel {
+            width: 100px;
+            height: 120px;
+            background-color: white;
+            margin: 0 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid #333;
+            border-radius: 10px;
+        }
+        button {
+            font-size: 1.2rem;
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+        .info {
+            margin-top: 20px;
+        }
+        .home-link {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            padding: 5px 10px;
+            background-color: #333;
+            color: white;
+            text-decoration: none;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="home-link">Home</a>
+    <div class="slot-machine">
+        <h1>Simple Slot Machine</h1>
+        <div class="reels">
+            <div class="reel" id="reel1">🍒</div>
+            <div class="reel" id="reel2">🍒</div>
+            <div class="reel" id="reel3">🍒</div>
+        </div>
+        <button id="spinButton">Spin (10 credits)</button>
+        <div class="info">
+            <p>Balance: <span id="balance">1000</span> credits</p>
+            <p>Winnings: <span id="winnings">0</span> credits</p>
+        </div>
+    </div>
+    <script>
+        const symbols = ['🍒', '🍋', '🍊', '🍇', '🔔', '💎'];
+        let balance = 1000;
+        let winnings = 0;
+
+        const reels = [
+            document.getElementById('reel1'),
+            document.getElementById('reel2'),
+            document.getElementById('reel3')
+        ];
+        const spinButton = document.getElementById('spinButton');
+        const balanceDisplay = document.getElementById('balance');
+        const winningsDisplay = document.getElementById('winnings');
+
+        spinButton.addEventListener('click', spin);
+
+        function spin() {
+            if (balance < 10) return;
+            balance -= 10;
+            updateDisplay();
+            spinButton.disabled = true;
+
+            const newSymbols = reels.map(() => symbols[Math.floor(Math.random() * symbols.length)]);
+            
+            let spins = 0;
+            const spinInterval = setInterval(() => {
+                reels.forEach((reel, index) => {
+                    reel.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+                });
+                spins++;
+                if (spins >= 20) {
+                    clearInterval(spinInterval);
+                    reels.forEach((reel, index) => {
+                        reel.textContent = newSymbols[index];
+                    });
+                    calculateWinnings(newSymbols);
+                    spinButton.disabled = false;
+                }
+            }, 100);
+        }
+
+        function calculateWinnings(newSymbols) {
+            if (newSymbols[0] === newSymbols[1] && newSymbols[1] === newSymbols[2]) {
+                winnings = symbols.indexOf(newSymbols[0]) * 100 + 100;
+                balance += winnings;
+            } else {
+                winnings = 0;
+            }
+            updateDisplay();
+        }
+
+        function updateDisplay() {
+            balanceDisplay.textContent = balance;
+            winningsDisplay.textContent = winnings;
+        }
+    </script>
+</body>
+</html>

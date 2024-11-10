@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple 5-Card Poker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #2c6e8c;
+            color: white;
+        }
+        .game-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+        .hand {
+            display: flex;
+            margin: 10px 0;
+        }
+        .card {
+            width: 70px;
+            height: 100px;
+            background-color: white;
+            color: black;
+            margin: 0 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .card.selected {
+            border: 3px solid gold;
+        }
+        button {
+            margin: 5px;
+            padding: 10px 20px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        .home-link {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            padding: 5px 10px;
+            background-color: #333;
+            color: white;
+            text-decoration: none;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="home-link">Home</a>
+    <h1>Simple 5-Card Poker</h1>
+    <div class="game-area">
+        <h2>Your Hand</h2>
+        <div id="player-hand" class="hand"></div>
+        <button id="deal-button">Deal</button>
+        <button id="draw-button" disabled>Draw</button>
+        <div id="message"></div>
+    </div>
+    <script>
+        const suits = ['♠', '♥', '♦', '♣'];
+        const values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+        let deck = [];
+        let playerHand = [];
+
+        const playerHandElement = document.getElementById('player-hand');
+        const dealButton = document.getElementById('deal-button');
+        const drawButton = document.getElementById('draw-button');
+        const messageElement = document.getElementById('message');
+
+        function createDeck() {
+            deck = [];
+            for (let suit of suits) {
+                for (let value of values) {
+                    deck.push({ suit, value });
+                }
+            }
+        }
+
+        function shuffleDeck() {
+            for (let i = deck.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [deck[i], deck[j]] = [deck[j], deck[i]];
+            }
+        }
+
+        function dealCard() {
+            return deck.pop();
+        }
+
+        function updateHandDisplay() {
+            playerHandElement.innerHTML = '';
+            for (let card of playerHand) {
+                const cardElement = document.createElement('div');
+                cardElement.className = 'card';
+                cardElement.textContent = `${card.value}${card.suit}`;
+                cardElement.addEventListener('click', () => toggleCardSelection(cardElement));
+                playerHandElement.appendChild(cardElement);
+            }
+        }
+
+        function toggleCardSelection(cardElement) {
+            cardElement.classList.toggle('selected');
+        }
+
+        function deal() {
+            createDeck();
+            shuffleDeck();
+            playerHand = [];
+            for (let i = 0; i < 5; i++) {
+                playerHand.push(dealCard());
+            }
+            updateHandDisplay();
+            dealButton.disabled = true;
+            drawButton.disabled = false;
+            messageElement.textContent = 'Select cards to discard and click Draw';
+        }
+
+        function draw() {
+            const selectedCards = document.querySelectorAll('.card.selected');
+            selectedCards.forEach((cardElement, index) => {
+                const newCard = dealCard();
+                playerHand[index] = newCard;
+                cardElement.textContent = `${newCard.value}${newCard.suit}`;
+                cardElement.classList.remove('selected');
+            });
+            drawButton.disabled = true;
+            evaluateHand();
+        }
+
+        function evaluateHand() {
+            const values = playerHand.map(card => card.value);
+            const suits = playerHand.map(card => card.suit);
+            
+            const isFlush = suits.every(suit => suit === suits[0]);
+            const isStraight = isStraightHand(values);
+            const valueCounts = values.reduce((acc, value) => {
+                acc[value] = (acc[value] || 0) + 1;
+                return acc;
+            }, {});
+            
+            const counts = Object.values(valueCounts);
+            
+            if (isFlush && isStraight) {
+                messageElement.textContent = 'Straight Flush!';
+            } else if (counts.includes(4)) {
+                messageElement.textContent = 'Four of a Kind!';
+            } else if (counts.includes(3) && counts.includes(2)) {
+                messageElement.textContent = 'Full House!';
+            } else if (isFlush) {
+                messageElement.textContent = 'Flush!';
+            } else if (isStraight) {
+                messageElement.textContent = 'Straight!';
+            } else if (counts.includes(3)) {
+                messageElement.textContent = 'Three of a Kind!';
+            } else if (counts.filter(count => count === 2).length === 2) {
+                messageElement.textContent = 'Two Pair!';
+            } else if (counts.includes(2)) {
+                messageElement.textContent = 'One Pair!';
+            } else {
+                messageElement.textContent = 'High Card!';
+            }
+            
+            dealButton.disabled = false;
+        }
+
+        function isStraightHand(values) {
+            const order = '23456789TJQKA';
+            const sortedValues = values.map(v => v === '10' ? 'T' : v).sort((a, b) => order.indexOf(a) - order.indexOf(b)).join('');
+            return order.includes(sortedValues) || sortedValues === 'A2345';
+        }
+
+        dealButton.addEventListener('click', deal);
+        drawButton.addEventListener('click', draw);
+    </script>
+</body>
+</html>

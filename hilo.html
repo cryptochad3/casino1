@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hi-Lo Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #3a7ca5;
+            color: white;
+        }
+        .game-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+        .card {
+            width: 150px;
+            height: 200px;
+            background-color: white;
+            color: black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 3rem;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        button {
+            margin: 5px;
+            padding: 10px 20px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+        .home-link {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            padding: 5px 10px;
+            background-color: #333;
+            color: white;
+            text-decoration: none;
+            border-radius: 3px;
+        }
+        #score {
+            font-size: 1.5rem;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="home-link">Home</a>
+    <h1>Hi-Lo Game</h1>
+    <div class="game-area">
+        <div class="card" id="current-card"></div>
+        <div>
+            <button id="higher-button">Higher</button>
+            <button id="lower-button">Lower</button>
+        </div>
+        <div id="message"></div>
+        <div id="score">Score: 0</div>
+    </div>
+    <script>
+        const currentCardElement = document.getElementById('current-card');
+        const higherButton = document.getElementById('higher-button');
+        const lowerButton = document.getElementById('lower-button');
+        const messageElement = document.getElementById('message');
+        const scoreElement = document.getElementById('score');
+
+        const suits = ['♠', '♥', '♦', '♣'];
+        const values = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
+
+        let currentCard;
+        let score = 0;
+
+        function getRandomCard() {
+            const suit = suits[Math.floor(Math.random() * suits.length)];
+            const value = values[Math.floor(Math.random() * values.length)];
+            return { suit, value };
+        }
+
+        function displayCard(card) {
+            currentCardElement.textContent = `${card.value}${card.suit}`;
+        }
+
+        function updateScore() {
+            scoreElement.textContent = `Score: ${score}`;
+        }
+
+        function startGame() {
+            currentCard = getRandomCard();
+            displayCard(currentCard);
+            messageElement.textContent = '';
+            higherButton.disabled = false;
+            lowerButton.disabled = false;
+        }
+
+        function compareCards(guess) {
+            const nextCard = getRandomCard();
+            const currentIndex = values.indexOf(currentCard.value);
+            const nextIndex = values.indexOf(nextCard.value);
+
+            let result;
+            if (nextIndex > currentIndex) {
+                result = 'higher';
+            } else if (nextIndex < currentIndex) {
+                result = 'lower';
+            } else {
+                result = 'equal';
+            }
+
+            if (guess === result || result === 'equal') {
+                score++;
+                messageElement.textContent = 'Correct! +1 point';
+            } else {
+                score = Math.max(0, score - 1);
+                messageElement.textContent = 'Wrong! -1 point';
+            }
+
+            currentCard = nextCard;
+            displayCard(currentCard);
+            updateScore();
+
+            setTimeout(() => {
+                messageElement.textContent = '';
+            }, 1500);
+        }
+
+        higherButton.addEventListener('click', () => compareCards('higher'));
+        lowerButton.addEventListener('click', () => compareCards('lower'));
+
+        startGame();
+    </script>
+</body>
+</html>

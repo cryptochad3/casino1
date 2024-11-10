@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bank</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #e0e0e0;
+        }
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            margin-top: 20px;
+        }
+        h1 {
+            color: #FFD700;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        .home-link {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 10px 20px;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #FFD700;
+            text-decoration: none;
+            border-radius: 25px;
+            transition: all 0.3s ease;
+        }
+        .home-link:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        #balance {
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+        input[type="number"] {
+            padding: 10px;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            width: 150px;
+            text-align: center;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 1rem;
+            cursor: pointer;
+            background-color: #ffd700;
+            border: none;
+            border-radius: 5px;
+            color: #333;
+            margin: 5px;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            background-color: #ffec8b;
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="home-link">Home</a>
+    <h1>Bank</h1>
+    <div class="game-container">
+        <div id="balance">Balance: $1000</div>
+        <input type="number" id="amount" placeholder="Amount">
+        <button id="deposit-button">Deposit</button>
+        <button id="withdraw-button">Withdraw</button>
+        <div id="message"></div>
+    </div>
+    <script>
+        const balanceElement = document.getElementById('balance');
+        const amountInput = document.getElementById('amount');
+        const depositButton = document.getElementById('deposit-button');
+        const withdrawButton = document.getElementById('withdraw-button');
+        const messageElement = document.getElementById('message');
+
+        let balance = 1000;
+
+        function updateBalance() {
+            balanceElement.textContent = `Balance: $${balance}`;
+        }
+
+        function deposit() {
+            const amount = parseInt(amountInput.value);
+            if (amount > 0) {
+                balance += amount;
+                updateBalance();
+                messageElement.textContent = `Deposited $${amount}.`;
+                amountInput.value = '';
+            } else {
+                messageElement.textContent = 'Please enter a valid amount.';
+            }
+        }
+
+        function withdraw() {
+            const amount = parseInt(amountInput.value);
+            if (amount > 0 && amount <= balance) {
+                balance -= amount;
+                updateBalance();
+                messageElement.textContent = `Withdrew $${amount}.`;
+                amountInput.value = '';
+            } else {
+                messageElement.textContent = 'Invalid amount or insufficient balance.';
+            }
+        }
+
+        depositButton.addEventListener('click', deposit);
+        withdrawButton.addEventListener('click', withdraw);
+
+        updateBalance();
+    </script>
+</body>
+</html>
